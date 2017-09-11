@@ -11,10 +11,17 @@ const jwt = require('jsonwebtoken');
 router.post('/signup', function (req,res,next) {
 
     //check if we already have a user with this email address
-    db.siteUserModel.findOne({email:req.body.email}, function (err,user) {
+    db.siteUserModel.findOne({$or:[{email:req.body.email},{userName:req.body.userName}]}, function (err,user) {
         //TODO: ALSO CHECK FOR UNIQUE USERNAME
         if(user){
-            res.json({problem_message:'Email already taken'});
+            if(user.userName===req.body.userName)
+            res.json({problem_message:'Username is already taken'});
+            else if (user.email===req.body.email){
+                res.json({problem_message:'Email is already taken'});
+            }
+            else {
+                res.json({problem_message:'Username or email is already taken'});
+            }
         }
         else if(err){
             res.json({problem_message:'We are experiencing server issue. Please try again later.'});
@@ -68,7 +75,7 @@ router.post('/login',function (req,res,next) {
        }
        //password is correct; create jwt
         let token = jwt.sign({user:user},'secret',{expiresIn:7200});
-        res.status('200').json({massage:'successfully logged in',token,user_details:user});
+        res.status('200').json({massage:'successfully logged in',token,user});
    });
 });
 
@@ -129,5 +136,26 @@ router.post('/user_details',function (req,res,next) {
         }
     );
 });
+
+router.post('/saveBlogPost',function (req,res,next) {
+    console.log(req.body);
+    // let blogPost = new db.blogPostModel(req.body);
+    // blogPost.save(req.body,function (err,result) {
+    //     if(err){
+    //         console.log(err);
+    //         res.status(501).json({message:'some problem with DB'});
+    //         return;
+    //     }
+    //     res.status(201).json({message:'blog created',obj:result});
+    //
+    //
+    // });
+    db.blogPostModel.update({blogHTML:'sandeep'},req.body,{ upsert: true },function (err, numAffected) {
+        console.log(err);
+        console.log(numAffected);
+    });
+});
+
+
 
 module.exports = router;

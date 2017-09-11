@@ -93,7 +93,7 @@ router.post('/AllIcons', function (req, res) {
     let results = helperDB.getImagesContainersFromDB(query ,0,10).then((value)=>
     {
         console.log("fetched value=>",value);
-        res.send(value)
+        res.send(value);
     }
     );
 
